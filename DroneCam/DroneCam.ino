@@ -5,8 +5,8 @@ int readChannel(int channelInput){
   int ch = pulseIn(channelInput, HIGH, 30000);
   return constrain(ch, 1000, 2000);
 }
-#define camPin 3 // Pin of the camera servo
-#define camCh 17 // Camera channel pin on the receiver
+#define camPin 1 // Pin of the camera servo
+#define camCh 16 // Camera channel pin on the receiver
 int camAngle = 0;
 
 void setup() {
@@ -28,8 +28,8 @@ void loop() {
   if(camAngle == 1000){ // NO SIGNAL
     camAngle = 1500;
   } else
-  if(camAngle > 1100){ // Normal signal
-    camAngle=map(camAngle, 1100, 2000, 1000, 2000);
+  if(camAngle >= 1100){ // Normal signal
+    camAngle=map(camAngle, 1100, 2000, 1050, 2000);
   }
 
   cam.writeMicroseconds(camAngle);
