@@ -1,37 +1,59 @@
 #include <Servo.h>
 
-Servo cam;
-int readChannel(int channelInput){
-  int ch = pulseIn(channelInput, HIGH, 30000);
-  return constrain(ch, 1000, 2000);
-}
-#define camPin 1 // Pin of the camera servo
-#define camCh 16 // Camera channel pin on the receiver
-int camAngle = 0;
+#define ch5input 18
+
+volatile uint16_t ch5;
+uint16_t ch5_start;
+
+#define camPin 5
+int desiredCamAngle = 0;
+int actualCamAngle=0;
+
+Servo camServo;
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
-  
-  pinMode(camCh, INPUT);
+
+  pinMode(ch5input, INPUT);
   pinMode(camPin, OUTPUT);
-  
-  digitalWrite(13, HIGH);
-  cam.attach(camPin, 1000, 2000);
-  digitalWrite(13, LOW);
+
+  attachInterrupt(ch5input, RCchannel5, CHANGE);  
+  camServo.attach(camPin, 1000, 2000);
 }
 
 void loop() {
-  camAngle = readChannel(camCh);
-  Serial.println(camAngle);
+  
+  moveCamera();
+  delay(10);
+}
 
-  if(camAngle == 1000){ // NO SIGNAL
-    camAngle = 1500;
+void moveCamera(){
+  desiredCamAngle = constrain(ch5, 1000, 2000);
+  Serial.println(desiredCamAngle);
+
+  if(abs(desiredCamAngle-actualCamAngle)<20){
+    return;
+  } else{
+  actualCamAngle = desiredCamAngle;
+  if(desiredCamAngle < 950){ // NO SIGNAL
+    desiredCamAngle = 1500;
   } else
-  if(camAngle >= 1100){ // Normal signal
-    camAngle=map(camAngle, 1100, 2000, 1050, 2000);
+  if(desiredCamAngle >= 950){ // Normal signal
+    desiredCamAngle=map(desiredCamAngle, 1000, 2000, 1100, 2000);
   }
+  Serial.println("Writing");
+  camServo.write(desiredCamAngle);
+  }
+}
 
-  cam.writeMicroseconds(camAngle);
-  delay(25);
+void RCchannel5() {
+// If the pin is HIGH, start a timer
+if (digitalRead(ch5input) == HIGH) {
+ch5_start = micros();
+} else {
+// The pin is now LOW so output the difference
+// between when the timer was started and now
+ch5 = (uint16_t) (micros() - ch5_start);
+}
 }
