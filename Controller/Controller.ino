@@ -10,9 +10,6 @@
 
 float RateRoll, RatePitch, RateYaw;
 
-float RateCalibrationRoll, RateCalibrationPitch, RateCalibrationYaw;
-int RateCalibrationNumber;
-
 float AccX, AccY, AccZ;
 float AngleRoll, AnglePitch;
 
@@ -67,21 +64,6 @@ void gyro_signals(void){
   AnglePitch=-atan(AccX/sqrt(AccY*AccY+AccZ*AccZ))*1/(3.14159/180);
 }
 
-void gyro_calibration(){
-    for (RateCalibrationNumber=0; RateCalibrationNumber < 2000; RateCalibrationNumber++){
-    gyro_signals();
-    RateCalibrationRoll += RateRoll;
-    RateCalibrationPitch += RatePitch;
-    RateCalibrationYaw += RateYaw;
-    delay(1);
-  }
-
-  RateCalibrationRoll/=2000;
-  RateCalibrationPitch/=2000;
-  RateCalibrationYaw/=2000;
-
-}
-
 void angle_calibration(){
   digitalWrite(13, LOW);
   Serial.println("STARTING UPPER ANGLE CALIBRATION");
@@ -93,17 +75,17 @@ void angle_calibration(){
   }
   digitalWrite(13, LOW);
   Serial.println("Calibrating upper angle...");
-  for (int i=0; i < 1000; i++){
+  for (int i=0; i < 2000; i++){
     gyro_signals();
     maxup+=AngleRoll;
     delay(1);
   }
-  maxup/=1000;
+  maxup/=2000;
   Serial.print("UPPER ANGLE CALIBRATED  >>>  ");
   Serial.println(maxup);
 
   Serial.println("STARTING LOWER ANGLE CALIBRATION");
-  encoderWrite(PPM_CHANNEL, 1100);
+  encoderWrite(PPM_CHANNEL, 1000);
   delay(500);
   digitalWrite(13, HIGH);
   Serial.println("Position your head in the lowermost position and click the button when ready");
@@ -111,12 +93,12 @@ void angle_calibration(){
   }
   digitalWrite(13, LOW);
   Serial.println("Calibrating lower angle...");
-  for (int i=0; i < 1000; i++){
+  for (int i=0; i < 2000; i++){
     gyro_signals();
     maxdown+=AngleRoll;
     delay(1);
   }
-  maxdown/=1000;
+  maxdown/=2000;
   digitalWrite(13, HIGH);
   Serial.print("LOWER ANGLE CALIBRATED  >>>  ");
   Serial.println(maxdown);
@@ -142,14 +124,6 @@ void setup ()
   Wire.write(0x00);
   Wire.endTransmission();
 
-  Serial.println("Position your head straight and click the button");
-  while(digitalRead(BUTTON)==0){
-  }
-  Serial.println("CALIBRATING GYROSCOPE");
-  digitalWrite(13, LOW);
-  gyro_calibration();
-  digitalWrite(13, HIGH);
-
   Serial.println("Click the button to start head angle calibration!");
   while(digitalRead(BUTTON)==0){
   }
@@ -162,7 +136,7 @@ void loop ()
 {
   gyro_signals();
 
-  int pulseWidth = constrain(map(AngleRoll, maxdown, maxup, 1100, 2000),1100,2000);  // Microseconds being sent to the RC (1000 to 2000)
+  int pulseWidth = constrain(map(AngleRoll, maxdown, maxup, 1000, 2000),1000,2000);  // Microseconds being sent to the RC (1000 to 2000)
   encoderWrite(PPM_CHANNEL, pulseWidth); // encoderWrite(PPM_CHANNEL, SIGNAL);
 
   Serial.print("Roll Angle = ");
