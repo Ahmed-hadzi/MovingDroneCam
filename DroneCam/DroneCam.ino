@@ -1,11 +1,11 @@
 #include <Servo.h>
 
-#define ch5input 18
+#define ch5input 22
 
 volatile uint16_t ch5;
 uint16_t ch5_start;
 
-#define camPin 5
+#define camPin 23
 int desiredCamAngle = 0;
 int actualCamAngle=0;
 
@@ -25,7 +25,6 @@ void setup() {
 void loop() {
   
   moveCamera();
-  delay(10);
 }
 
 void moveCamera(){
@@ -40,10 +39,10 @@ void moveCamera(){
     desiredCamAngle = 1500;
   } else
   if(desiredCamAngle >= 950){ // Normal signal
-    desiredCamAngle=map(desiredCamAngle, 1000, 2000, 1100, 2000);
+    desiredCamAngle=map(desiredCamAngle, 1000, 2000, 1000, 2000);
   }
   Serial.println("Writing");
-  camServo.write(desiredCamAngle);
+  camServo.writeMicroseconds(desiredCamAngle);
   }
 }
 
