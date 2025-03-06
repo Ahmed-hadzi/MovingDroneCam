@@ -99,6 +99,7 @@ void angle_calibration(){
     delay(1);
   }
   maxdown/=2000;
+  encoderWrite(PPM_CHANNEL, 1500);
   digitalWrite(13, HIGH);
   Serial.print("LOWER ANGLE CALIBRATED  >>>  ");
   Serial.println(maxdown);

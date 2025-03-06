@@ -5,7 +5,7 @@
 volatile uint16_t ch5;
 uint16_t ch5_start;
 
-#define camPin 23
+#define camPin 12
 int desiredCamAngle = 0;
 int actualCamAngle=0;
 
@@ -25,13 +25,14 @@ void setup() {
 void loop() {
   
   moveCamera();
+  delay(10);
 }
 
 void moveCamera(){
   desiredCamAngle = constrain(ch5, 1000, 2000);
   Serial.println(desiredCamAngle);
 
-  if(abs(desiredCamAngle-actualCamAngle)<20){
+  if(abs(desiredCamAngle-actualCamAngle)<10){
     return;
   } else{
   actualCamAngle = desiredCamAngle;
@@ -45,6 +46,12 @@ void moveCamera(){
   camServo.writeMicroseconds(desiredCamAngle);
   }
 }
+
+/*void moveCamera(){
+  desiredCamAngle = constrain(ch5, 1000, 2000);
+  Serial.println(desiredCamAngle);
+  camServo.writeMicroseconds(desiredCamAngle);
+}*/
 
 void RCchannel5() {
 // If the pin is HIGH, start a timer
