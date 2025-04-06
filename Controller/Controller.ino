@@ -57,8 +57,8 @@ void gyro_signals(void){
   RateYaw = (float)GyroZ/65.5;
 
   AccX = (float)AccXLSB/4096-0.04; // CALIBRATION X
-  AccY = (float)AccYLSB/4096+0.02; // CALIBRATION Y
-  AccZ = (float)AccZLSB/4096+0.07; // CALIBRATION Z
+  AccY = (float)AccYLSB/4096-0.18; // CALIBRATION Y
+  AccZ = ((float)AccZLSB/4096+0.07)*1000; // CALIBRATION Z
 
   AngleRoll=atan(AccY/sqrt(AccX*AccX+AccZ*AccZ))*1/(3.14159/180);
   AnglePitch=-atan(AccX/sqrt(AccY*AccY+AccZ*AccZ))*1/(3.14159/180);
@@ -67,7 +67,7 @@ void gyro_signals(void){
 void angle_calibration(){
   digitalWrite(13, LOW);
   Serial.println("STARTING UPPER ANGLE CALIBRATION");
-  encoderWrite(PPM_CHANNEL, 2000);
+  encoderWrite(PPM_CHANNEL, 1000);
   delay(500);
   digitalWrite(13, HIGH);
   Serial.println("Position your head in the uppermost position and click the button when ready");
@@ -75,17 +75,17 @@ void angle_calibration(){
   }
   digitalWrite(13, LOW);
   Serial.println("Calibrating upper angle...");
-  for (int i=0; i < 2000; i++){
+  for (int i=0; i < 1000; i++){
     gyro_signals();
-    maxup+=AngleRoll;
+    maxup+=AccZ;
     delay(1);
   }
-  maxup/=2000;
+  maxup/=1000;
   Serial.print("UPPER ANGLE CALIBRATED  >>>  ");
   Serial.println(maxup);
 
   Serial.println("STARTING LOWER ANGLE CALIBRATION");
-  encoderWrite(PPM_CHANNEL, 1000);
+  encoderWrite(PPM_CHANNEL, 2000);
   delay(500);
   digitalWrite(13, HIGH);
   Serial.println("Position your head in the lowermost position and click the button when ready");
@@ -93,12 +93,12 @@ void angle_calibration(){
   }
   digitalWrite(13, LOW);
   Serial.println("Calibrating lower angle...");
-  for (int i=0; i < 2000; i++){
+  for (int i=0; i < 1000; i++){
     gyro_signals();
-    maxdown+=AngleRoll;
+    maxdown+=AccZ;
     delay(1);
   }
-  maxdown/=2000;
+  maxdown/=1000;
   encoderWrite(PPM_CHANNEL, 1500);
   digitalWrite(13, HIGH);
   Serial.print("LOWER ANGLE CALIBRATED  >>>  ");
@@ -137,11 +137,11 @@ void loop ()
 {
   gyro_signals();
 
-  int pulseWidth = constrain(map(AngleRoll, maxdown, maxup, 1000, 2000),1000,2000);  // Microseconds being sent to the RC (1000 to 2000)
+  int pulseWidth = constrain(map(AccZ, maxdown, maxup, 2000, 1000),1000,2000);  // Microseconds being sent to the RC (1000 to 2000)
   encoderWrite(PPM_CHANNEL, pulseWidth); // encoderWrite(PPM_CHANNEL, SIGNAL);
 
-  Serial.print("Roll Angle = ");
-  Serial.print(AngleRoll);
+  Serial.print("AccZ = ");
+  Serial.print(AccZ);
   Serial.print("      |      Signal = ");
   Serial.println(pulseWidth);
 
